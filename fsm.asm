@@ -17,6 +17,11 @@ sPtr DWORD vStack						; Stack ptr
 iCount DWORD 0							; Instruction ptr
 aCount DWORD 0							; Argument ptr
 
+fnArray DWORD vPush, vCopy, vSlide, vDup, vSwap, vDiscard,
+		    vAdd, vSub, vMul, vDiv, vMod, vStore,
+		    vLoad, vLabel, vCall, vJmp, vJz, vJs,
+		    vRet, vEnd, vOChar, vONum, vIChar, vINum			; Function array
+
 .code
 InterpretWS PROC,
 	fileHandle:DWORD
@@ -104,39 +109,16 @@ Finished:
 	ret
 InterpretWS ENDP
 
-ExecWS PROC USES esi edi
+ExecWS PROC USES eax esi
 
 ; Executes instructions in buffer
 ; Receives: NA
 ; Returns: NA
 
 	mov esi, 0						; Instruction = Argument offset
-L1: 
-	ExecIf I_PUSH, vPush				; This will be eventually replaced with a binary search
-	ExecIf I_COPY, vCopy				; Kinda silly now but just temporary
-	ExecIf I_SLIDE, vSlide				; Will macro it further as well
-	ExecIf I_DUP, vDup
-	ExecIf I_SWAP, vSwap
-	ExecIf I_DISCARD, vDiscard
-	ExecIf I_ADD, vAdd
-	ExecIf I_SUB, vSub
-	ExecIf I_MUL, vMul
-	ExecIf I_DIV, vDiv
-	ExecIf I_MOD, vMod
-	ExecIf I_STORE, vStore
-	ExecIf I_LOAD, vLoad
-	ExecIf I_LABEL, vLabel
-	ExecIf I_CALL, vCall
-	ExecIf I_JMP, vJmp
-	ExecIf I_JZ, vJz
-	ExecIf I_JS, vJs
-	ExecIf I_RET, vRet
-	ExecIf I_END, vEnd
-	ExecIf I_OCHAR, vOChar
-	ExecIf I_ONUM, vONum
-	ExecIf I_ICHAR, vIChar
-	ExecIf I_INUM, vINum
-Next:
+L1:
+	movzx eax, insBuf[esi]
+	call fnArray[eax * TYPE DWORD]
 	inc esi
 	cmp esi, iCount
 	jb L1

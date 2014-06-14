@@ -92,15 +92,6 @@ PutIA MACRO val:REQ
 	PutIns val
 ENDM
 
-ExecIf MACRO insNum:REQ, funcName:REQ
-	LOCAL After
-	cmp insBuf[esi], insNum				; esi is the instruction offset
-	jne After
-	INVOKE funcName
-	jmp Next
-After:
-ENDM
-
 FetchArg MACRO reg
 	mov reg, argBuf[esi * 4]
 ENDM

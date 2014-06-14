@@ -32,37 +32,61 @@ Labels are entered in the same way as numbers. There is only one global namespac
 In v0.1, creating labels do not affect anything. In order to jump to a specific instruction, simply specify the instruction's number (zero-indexed) as the argument. This should also be rectified in future versions.
 
 Stack Operations:
+
 PUSH: [SP][SP]num
+
 COPY: [SP][TB][SP]num
+
 SLIDE: [SP][TB][LF]num
+
 DUPLICATE: [SP][LF][SP]
+
 SWAP: [SP][LF][TB]
+
 DISCARD: [SP][LF][LF]
 
 Arithmetic Operations:
+
 ADD: [TB][SP][SP][SP]
+
 SUB: [TB][SP][SP][TB]
+
 MUL: [TB][SP][SP][LF]
+
 DIV: [TB][SP][TB][SP]
+
 MOD: [TB][SP][TB][TB]
 
 Heap Operations:
+
 STORE: [TB][TB][SP]
+
 LOAD: [TB][TB][TB]
 
 I/O Operations:
+
 OUTCHAR: [TB][LF][SP][SP]
+
 OUTNUM: [TB][LF][SP][TB]
+
 INCHAR: [TB][LF][TB][SP]
+
 INNUM: [TB][LF][TB][TB]
 
 Flow Control:
+
 MAKE LABEL: [LF][SP][SP]lbl
+
 CALL SUBROUTINE: [LF][SP][TB]lbl
+
 UNCOND. JUMP: [LF][SP][LF]lbl
+
 JUMP IF ZERO: [LF][TB][SP]lbl
+
 JUMP IF NEG: [LF][TB][TB]lbl
+
 RETURN FROM SUB.: [LF][TB][LF]
+
 END PROGRAM: [LF][LF][LF]
 
 Enjoy!
