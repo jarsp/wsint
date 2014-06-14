@@ -9,6 +9,10 @@ Whitespace is an esoteric programming language created by Edwin Brady and Chris 
 
 Usage:
 
+Basic usage of the interpreter involves just downloading the executable and creating a file called 'script.ws' in the same directory. Run wsint from the command line to see the results of the interpreter acting on script.ws. The script.ws file in this repo prints "Hello World" to the screen in a slightly non-trivial way.
+
+Compiling:
+
 This interpreter was written for MASM, and compiled on Visual Studio 2010 Express. Currently, it depends on an external library (Irvine32.lib) available at kipirvine.com/asm/examples/index.htm. Although this was compiled in VS2010, I believe other versions should work (just download the correct library version), although I have not tested this. I will eventually work on eliminating the dependency on this library.
 
 In order to test the interpreter, you can follow the instructions at http://kipirvine.com/asm/gettingStartedVS2010/index.htm to set up the appropriate linker/compiler configurations. The script should be called 'script.ws' and placed in the same directory.
