@@ -4,7 +4,7 @@ INCLUDE Irvine32.inc
 INCLUDE defs.inc
 
 EXTERN curTok:BYTE, vStack:SDWORD, vHeap:SDWORD, insBuf:BYTE, argBuf:SDWORD
-EXTERN lblBuf:SDWORD, sPtr:PTR SDWORD, iCount:DWORD, aCount:DWORD, lblPtr:DWORD
+EXTERN sPtr:PTR SDWORD, iCount:DWORD, aCount:DWORD
 
 .code
 GetNextChar PROC USES eax edx ecx,
@@ -76,29 +76,6 @@ Done:
 	ret
 GetArg ENDP
 
-GetLabelDest PROC USES edi ebx
-
-; Gets the line pointed to by label in eax.
-; Receives: EAX = label
-; Returns: EAX = destination
-
-	mov ebx, 0
-	mov edi, lblPtr
-Top:
-	cmp eax, lblBuf[ebx]
-	je Found
-	add ebx, 2 * TYPE SDWORD
-	cmp ebx, edi
-	jl Top
-	mov eax, -2					; Not found, will be -1 after esi inc
-
-	ret
-Found:
-	mov eax, lblBuf[ebx + TYPE SDWORD]
-	
-	ret
-GetLabelDest ENDP
-
 vPush PROC USES eax ebx
 
 ; PUSH function
@@ -113,17 +90,13 @@ vPush PROC USES eax ebx
 	ret
 vPush ENDP
 
-vCopy PROC USES eax ebx
+vCopy PROC
 
-; Copy nth element from stack ptr (0 indexed) to top of stack
+; Copy nth element from base (0 indexed) to top of stack
 ; Receives: ESI = offset from argBuf
 ; Returns: NA
 
 	FetchArg eax
-	mov ebx, sPtr
-	shl eax, 2						; Mul by TYPE SDWORD
-	sub ebx, eax
-	sub ebx, TYPE SDWORD				; Zero indexed
 	mov eax, vStack[eax]
 	mov ebx, sPtr
 	mov [ebx], eax
@@ -273,7 +246,6 @@ vStore PROC USES eax ebx
 
 ; Stores a value into memory.
 ; Push the offset (zero-indexed) then the value, then call this command
-; Arguments are cleaned up
 ; Receives: NA
 ; Returns: NA
 
@@ -281,62 +253,61 @@ vStore PROC USES eax ebx
 	mov ebx, [eax - 2 * TYPE SDWORD]
 	mov eax, [eax - TYPE SDWORD]
 	mov vHeap[ebx * TYPE SDWORD], eax
-	sub sPtr, 2 * TYPE SDWORD
 
 	ret
 vStore ENDP
 
-vLoad PROC USES eax ebx
+vLoad PROC USES eax ebx ecx
 
 ; Loads a value from memory into top position on stack
 ; Push the offset (zero-indexed) and then call this command
-; Args are removed before putting onto stack
 ; Receives: NA
 ; Returns: NA
 
 	mov eax, sPtr
+	mov ebx, eax
 	mov eax, [eax - TYPE SDWORD]
-	mov eax, vHeap[eax * TYPE SDWORD]
-	mov ebx, sPtr
-	mov [ebx - TYPE SDWORD], eax
+	mov ecx, vHeap[eax * TYPE SDWORD]
+	mov [ebx], ecx
+	add sPtr, TYPE SDWORD
 
 	ret
 vLoad ENDP
 
 vLabel PROC
 
-; Doesn't do anything. Labels are processed in the first pass.
+; Sets a label. (I'm just using the (zero-indexed) instruction number atm.)
+; This doesn't do anything at the moment, until I learn WinAPI.
+; Or make a label heap in any case.
 
 	ret
 vLabel ENDP
 
 vCall PROC USES eax
 
-; Calls a subroutine by a 32-bit label.
+; Calls a subroutine by label (currently (zero-indexed) instruction number).
 ; Sets up the requisite stack frame (well, just the eip).
-; No error checking yet
 ; Receives: ESI = instruction pointer
 ; Returns: NA
 
 	mov eax, sPtr
-	mov [eax], esi					; esi not decrem., so when incremented, points to next ins.
+	mov [eax], esi
 	add sPtr, TYPE SDWORD
-	FetchArg eax
-	call GetLabelDest
+	FetchArg eax							; At this point of time, just an instruction no.
+	dec eax
 	mov esi, eax
 
 	ret
 vCall ENDP
 
-vJmp PROC USES eax
+vJmp PROC
 
 ; Jumps to a specified label (i.e. currently instruction number)
 ; Receives: ESI = instruction pointer
 ; Returns: NA
 
-	FetchArg eax
-	call GetLabelDest
-	mov esi, eax
+	FetchArg esi
+	dec esi
 
 	ret
 vJmp ENDP
@@ -351,9 +322,8 @@ vJz PROC USES eax ebx
 	mov ebx, 0
 	cmp [eax - TYPE SDWORD], ebx
 	jne NoJump
-	FetchArg eax
-	call GetLabelDest
-	mov esi, eax
+	FetchArg esi
+	dec esi
 NoJump:
 
 	ret
@@ -369,9 +339,8 @@ vJs PROC USES eax ebx
 	mov ebx, 0
 	cmp [eax - TYPE SDWORD], ebx
 	jnl NoJump
-	FetchArg eax
-	call GetLabelDest
-	mov esi, eax
+	FetchArg esi
+	dec esi
 NoJump:
 
 	ret
@@ -379,7 +348,7 @@ vJs ENDP
 
 vRet PROC
 
-; Returns from a function call. Make sure local vars are cleaned first!
+; Returns from a function call. Make sure local vars are cleaned.
 ; Receives: NA
 ; Returns: NA
 
@@ -419,14 +388,13 @@ vOChar PROC USES eax
 Write:
 	call WriteChar
 After:
-	
+
 	ret
 vOChar ENDP
 
 vONum PROC USES eax
 
 ; Outputs a 32-bit signed decimal num from the top of the stack
-; Removes the number from top of stack
 ; Receives: NA
 ; Returns: NA
 

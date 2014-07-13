@@ -5,21 +5,17 @@ INCLUDE defs.inc
 INCLUDE fsm_protos_int.inc
 
 PUBLIC curTok, vStack, vHeap, insBuf, argBuf
-PUBLIC lblBuf, sPtr, iCount, aCount, lblPtr
+PUBLIC sPtr, iCount, aCount
 
-.data?
+.data
 curTok BYTE ?							; Current token
 vStack SDWORD STACK_MAX DUP (?)			; Virtual stack
 vHeap SDWORD HEAP_MAX DUP (?)				; Virtual heap
 insBuf BYTE INS_MAX DUP (?)				; Instruction buffer
 argBuf SDWORD ARG_MAX DUP (?)				; Argument buffer
-lblBuf SDWORD LBL_MAX DUP (?)				; Label buffer
-
-.data
 sPtr DWORD vStack						; Stack ptr
 iCount DWORD 0							; Instruction ptr
 aCount DWORD 0							; Argument ptr
-lblPtr DWORD 0							; Label ptr
 
 fnArray DWORD vPush, vCopy, vSlide, vDup, vSwap, vDiscard,
 		    vAdd, vSub, vMul, vDiv, vMod, vStore,
@@ -82,17 +78,7 @@ FLOW_T: GetNext JMPZ, JMPS, SRET			; Flow tab submode
 FLOW_L: GetNext Finished, Finished, OVER	; Flow LF submode
 
 LBL:									; LABEL op
-	M_GetArg							; Labels need to be processed in this pass
-	jz Finished						; else forward jumps will fail
-	push edx
-	mov edx, lblPtr
-	mov lblBuf[edx], eax
-	mov eax, iCount					; Total no of ins read.
-	dec eax							; Puts last ins no read, so after inc will be next ins following lbl
-	mov lblBuf[edx + TYPE SDWORD], eax
-	add lblPtr, 2 * TYPE SDWORD			; Does not touch the iCount!
-	pop edx
-	jmp IMP
+	PutWithArg I_LABEL
 CLL:									; CALL op
 	PutWithArg I_CALL
 JUMP:								; JMP op
