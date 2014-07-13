@@ -11,9 +11,10 @@ INCLUDE Irvine32.inc
 INCLUDE defs.inc
 INCLUDE fsm_protos_ext.inc
 
-.data
+.data?
 fh DWORD ?							; Filehandle
-infile BYTE "script.ws", 0				; Temp file
+.data
+infile BYTE "script.ws"					; Temp file
 
 .code
 main PROC
