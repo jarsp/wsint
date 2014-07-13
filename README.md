@@ -33,7 +33,7 @@ Numbers are supposed to be arbitrary precision, but v0.1 of wsint enforces a 32-
 
 Labels are entered in the same way as numbers. There is only one global namespace, however.
 
-In v0.1, creating labels do not affect anything. In order to jump to a specific instruction, simply specify the instruction's number (zero-indexed) as the argument. This should also be rectified in future versions.
+In v0.1, creating labels do not affect anything. In order to jump to a specific instruction, simply specify the instruction's number (zero-indexed) as the argument. This has been fixed from v0.2 onwards. 
 
 Stack Operations:
 
